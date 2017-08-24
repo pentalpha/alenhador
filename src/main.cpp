@@ -1,26 +1,71 @@
 #include <string>
 #include <iostream>
+#include <map>
+#include <list>
 #include "Alignment.h"
 #include "NuclSeq.h"
+#include "FastaHeuristicFilter.h"
 #include "BigFasta.h"
 
 using namespace std;
 
-
+void searchEachInQuery(string query, string db, int max);
+void searchSeqInFastaDB(NuclSeq *querySeq, string dbPath, int maxFiltered);
 
 int main(int argc, char *argv[]){
     if(argc >= 3){
         string queryFile(argv[1]);
+        cout << "Query .fasta file: " << queryFile << endl;
         string databaseFile(argv[2]);
-
-        makeAlignment(queryFile, databaseFile);
+        cout << "Database .fasta file: " << queryFile << endl;
+        int maxToAlign = 6;
+        if(argc >= 4){
+            maxToAlign = stoi(argv[3]);
+        }
+        searchEachInQuery(queryFile, databaseFile, maxToAlign);
     }else{
         cout << "Please inform the query and database fasta files\n\t$ ./aligner [queryFile] [databaseFile]\n";
     }
+
+    return 0;
 }
 
-void makeAlignment(string queryFile, string databaseFile){
-    /*string seqA = "GAATTCAGTGATTGAA-GAACGCAGTAACCT";
+void searchEachInQuery(string query, string db, int max){
+    BigFasta querySeqs(query);
+    for(pair<int, NuclSeq*> entry : querySeqs.sequences){
+        NuclSeq *seq = entry.second;
+        if(seq == NULL){
+            cout << "Query at line " << entry.first << " of " << query 
+            << " could not be read correctly, not searching it." << endl;
+        }else{
+            searchSeqInFastaDB(seq, db, max);
+            //delete seq;
+        }
+    }
+}
+
+void searchSeqInFastaDB(NuclSeq *querySeq, string dbPath, int maxFiltered){
+    FastaHeuristicFilter filter(querySeq, dbPath, maxFiltered);
+    cout << "\n##########################################################" << endl;
+    cout << "##########################################################" << endl;
+    cout << "##########################################################" << endl;
+    cout << "\nQuery sequence:\n\t" << *querySeq->name << endl
+        <<"\tLength: " << querySeq->getContent()->length() << "bp" << endl;
+    cout << "Similtar to: " << endl;
+    list< pair<NuclSeq*, float> > filteredSequences = filter.justDoIt();
+    if(filteredSequences.size() > 0){
+        for(pair<NuclSeq*, float> seq : filteredSequences){
+            cout << "Similarity with\n\t" << *seq.first->name 
+            << "(" << seq.first->getContent()->length() <<"bp)" << endl
+            << "\n\t" << seq.second << endl;
+        }
+    }else{
+        cout << "\tNone\n";
+    }
+}
+
+/*void makeAlignment(string queryFile, string databaseFile){
+    string seqA = "GAATTCAGTGATTGAA-GAACGCAGTAACCT";
     string seqB = "---GAACGCAGTAACCT";
     string seqC = "AGAGC";
     string seqD = "CAGC";
@@ -43,7 +88,7 @@ void makeAlignment(string queryFile, string databaseFile){
     Alignment test(seq3, seq2);
     auto result = test.align();
     cout << result.first << "\n";
-    cout << result.second << "\n";*/
+    cout << result.second << "\n";
 
     BigFasta NuclSeq(queryFile, 71);
     BigFasta littleOne(databaseFile);
@@ -52,7 +97,7 @@ void makeAlignment(string queryFile, string databaseFile){
         cout << "Line " << entry.first << endl;
         string* content = entry.second->getContent();
         cout << *content << endl;
-    }*/
+    }
 
     vector<pair<int, float> > sims = *littleOne.similaritiesWith(seq2);
     cout << "Query seq: " << seq2->name << endl;
@@ -75,4 +120,4 @@ void makeAlignment(string queryFile, string databaseFile){
     auto result = test.align();
     cout << result.first << "\n";
     cout << result.second << "\n";
-}
+}*/

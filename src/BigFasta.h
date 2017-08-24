@@ -25,18 +25,23 @@ public:
         return sequences[index];
     }
 
-    inline SeqProfile* profileOf(int startLine){
+    /*inline SeqProfile* profileOf(int startLine){
         return sequences[startLine]->getProfile();
-    }
-    int wordFrequenceIn(string word, int )
-    vector<pair<int, float> >* similaritiesWith(NuclSeq* querySeq);
+    }*/
+
+    //int wordFrequenceIn(string word, int )
+
+    //vector<pair<int, float> >* similaritiesWith(NuclSeq* querySeq);
+    
     void deleteAll(){
         for(pair<int, NuclSeq*> entry : sequences){
-            entry.second->free();
+            if(entry.second != NULL){
+                entry.second->free();
+            }
         }
     }
 
-    void compareWithFasta(BigFasta *queryFasta);
+    //void compareWithFasta(BigFasta *queryFasta);
 };
 
 #endif

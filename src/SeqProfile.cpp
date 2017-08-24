@@ -1,6 +1,9 @@
 #include "SeqProfile.h"
 
 SeqProfile::SeqProfile(string *seq, int wordSize){
+    if(seq == NULL){
+        cout << "Cannot make the profile of a NULL string" << endl;
+    }
     length = seq->length();
     string word;
     for(int i = 0; i < seq->length()-wordSize; i++){
@@ -34,7 +37,7 @@ void SeqProfile::increaceWordCount(string &word){
     if(wordCounts.find(word) != wordCounts.end()){
         wordCounts[word]++;
     }else{
-        wordCounts[word]++ = 1;
+        wordCounts[word] = 1;
     }
 }
 

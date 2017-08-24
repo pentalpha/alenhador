@@ -1,8 +1,8 @@
 #include "BigFasta.h"
 
-bool lessOnPair(const std::pair<int,float> &left, const std::pair<int,float> &right) {
+/*bool lessOnPair(const std::pair<int,float> &left, const std::pair<int,float> &right) {
     return left.second < right.second;
-}
+}*/
 
 BigFasta::BigFasta(string fileName){
     //system("mkdir tmp");
@@ -13,7 +13,7 @@ BigFasta::BigFasta(string fileName){
     {
         int nline = 1;
         int lastStart = -1;
-        string name = "";
+        string *name;
         string *sequence;
         string line;
         while (getline(fastaFile,line))
@@ -21,11 +21,11 @@ BigFasta::BigFasta(string fileName){
             if(line.length() > 0){
                 if(line[0] == '<' || line[0] == '>'){
                     if(lastStart > 0){
-                        sequences[lastStart] = new NuclSeq(fileName, lastStart, name, sequence);
+                        sequences[lastStart] = new NuclSeq(name, sequence);
                         sequence = NULL;
                     }
                     //cout << "Seq start at " << nline << " name:" << endl;
-                    name = line;
+                    name = new string(line);
                     //cout << name << endl;
                     lastStart = nline;
                     sequence = new string("");
@@ -36,13 +36,13 @@ BigFasta::BigFasta(string fileName){
             nline++;
         }
         if(sequence != NULL){
-            sequences[lastStart] = new NuclSeq(fileName, lastStart, name, sequence);
+            sequences[lastStart] = new NuclSeq(name, sequence);
         }
         fastaFile.close();
     }
 }
 
-vector<pair<int, float> >* BigFasta::similaritiesWith(NuclSeq* querySeq){
+/*vector<pair<int, float> >* BigFasta::similaritiesWith(NuclSeq* querySeq){
     vector<pair<int, float> > *similarities = new vector<pair<int, float> >();
     cout << "Started calculating similarities" << endl;
     for(pair<int, NuclSeq*> entry : sequences){
@@ -57,7 +57,7 @@ vector<pair<int, float> >* BigFasta::similaritiesWith(NuclSeq* querySeq){
     cout << "Finished calculating similarities." << endl;
     sort(similarities->begin(), similarities->end(), lessOnPair);
     return similarities;
-}
+}*/
 
 BigFasta::~BigFasta(){
     deleteAll();

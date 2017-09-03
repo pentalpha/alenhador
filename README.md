@@ -1,15 +1,15 @@
 ```
- .------------------.__________________________________.
+ .acgatagcgcgctatata.ACATATATATATATATATATGC|AGAGAGAGAGA.
 /                   |                      |           |`-.,_
-\###################|######################|###########|,-'`
+\TTTTTTTTTTTTTTTTTTT|TCGAGAGAGATATATATATACA|AGAGAGAGAGA|,-'`
  `------------------'                       :    ___   l
-                                            /   (   )   \
+                                            /   C   T   \
                                            /     `-'     \
                                          ,'               `.
-                                      .d8b.               .d8b.
-                                      "Y8888p..       ,.d8888P"
-                                        "Y88888888888888888P"
-                                           ""YY8888888PP""
+                                      .aTg.               .aTg.
+                                      "YGGGGc..       ,.cGGGGA"
+                                        "CAAAAAAAAAAAAAAAAAG"
+                                           ""AATTTTTTTGG""
 ```
 
 # alenhador

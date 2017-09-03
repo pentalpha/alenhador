@@ -1,8 +1,8 @@
 ```
  .acgatagcgcgctatata.ACATATATATATATATATATGC|AGAGAGAGAGA.
-/                   |                      |           |`-.,_
-\TTTTTTTTTTTTTTTTTTT|TCGAGAGAGATATATATATACA|AGAGAGAGAGA|,-'`
- `------------------'                       :    ___   l
+G                   T                      T           |`-.,_
+CTTTTTTTTTTTTTTTTTTTTTCGAGAGAGATATATATATACA|AGAGAGAGAGA|,-'`
+ `aaaaaaaaaaaaaaaaaa'                       :    ___   l
                                             /   C   T   \
                                            /     `-'     \
                                          ,'               `.

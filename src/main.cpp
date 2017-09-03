@@ -11,6 +11,7 @@ using namespace std;
 
 void searchEachInQuery(string query, string db, int max);
 void searchSeqInFastaDB(NuclSeq *querySeq, string dbPath, int maxFiltered);
+void printHelp();
 
 int main(int argc, char *argv[]){
     if(argc >= 3){
@@ -23,11 +24,27 @@ int main(int argc, char *argv[]){
             maxToAlign = stoi(argv[3]);
         }
         searchEachInQuery(queryFile, databaseFile, maxToAlign);
+    }else if (argc == 2){
+        printHelp();
     }else{
-        cout << "Please inform the query and database fasta files\n\t$ ./aligner [queryFile] [databaseFile]\n";
+        cout << "Please inform the query and database fasta files" << endl;
+        printHelp();
     }
 
     return 0;
+}
+
+void printHelp(){
+    cout << "HELP: " << endl;
+    cout << "./alenhador [fasta query file] [fasta DB file] n" << endl
+        << "\t[fasta query file]\t= A .fasta file with sequences of " << endl
+        << "\t\t\t\tnucleotides to be searched." << endl
+        << "\t[fasta DB file]\t\t= A .fasta file with a lot of sequences," << endl
+        << "\t\t\t\twhere you want to search the query." << endl
+        << "\tn\t\t\t= The maximum number of results for each " << endl 
+        << "\t\t\t\tquery. Default=6." << endl
+        << "Example usage:" << endl
+        << "\t./alenhador example-data/query.fa example-data/database.fa 7" << endl;
 }
 
 void searchEachInQuery(string query, string db, int max){

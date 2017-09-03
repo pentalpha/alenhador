@@ -20,6 +20,8 @@ Parallel aligner for nucleotide sequences (.fasta) with similarity heuristic fil
 Requires 'g++' with C++14 available and 'make'
 
 ```sh
+    $ git clone https://github.com/pentalpha/alenhador.git
+    $ cd alenhador/
     $ make
 ```
 

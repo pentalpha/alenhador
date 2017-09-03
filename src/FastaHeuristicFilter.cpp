@@ -28,17 +28,39 @@ FastaHeuristicFilter::FastaHeuristicFilter(NuclSeq *query, string dbPath, int ma
 
 list< pair<NuclSeq*, float> > FastaHeuristicFilter::justDoIt(){
     //thread readDBThread(readDB);
+    int numberOfCompareThreads = std::thread::hardware_concurrency() - 2;
+    if (numberOfCompareThreads < 2){
+        numberOfCompareThreads = 2;
+    }
+    vector<thread> compareThreads;
     readingDB = true;
-    thread compareSeqsThread(&FastaHeuristicFilter::compareSeqs, this);
-    thread sortSeqsThread(&FastaHeuristicFilter::sortSeqs, this);
+    cout << "[Profiling threads = " << numberOfCompareThreads << "]" << endl;
     profiling = true;
-    compareSeqsThread.detach();
+    for(int i = 0; i < numberOfCompareThreads; i++){
+        compareThreads.push_back(thread(&FastaHeuristicFilter::compareSeqs, this));
+    }
+
+    thread sortSeqsThread(&FastaHeuristicFilter::sortSeqs, this);
     sorting = true;
     sortSeqsThread.detach();
     readDB();
-    while(profiling || sorting){
-        //Nothing to see here
+
+    for(int i = 0; i < compareThreads.size(); i++){
+        try{
+            compareThreads[i].join();
+        }catch (std::system_error &er){
+            //std::cout << "Thread" << er.what() << std::endl;
+        }
     }
+    profiling = false;
+
+    try{
+        sortSeqsThread.join();
+    }catch (std::system_error &er){
+        //std::cout << "error - " << er.what() << std::endl;
+    }
+    sorting = false;
+    
     //cout << "FINISHED THREADS" << endl;
     list< pair<NuclSeq*, float> > finalSeqs;
     for(SeqNode node : filteredNodes){
@@ -121,6 +143,10 @@ pair<string*, string*> FastaHeuristicFilter::getRawSeq(){
         return rawSeq;
     }else{
         cout << "There is no sequence in profiling queue" << endl;
+        pair<string*, string*> rawSeq;
+        rawSeq.first = NULL;
+        rawSeq.second = NULL;
+        return rawSeq;
     }
 }
 
@@ -130,19 +156,21 @@ int FastaHeuristicFilter::seqsToProfile(){
 }
 
 void FastaHeuristicFilter::compareSeqs(){
-    cout << "[Ready to make sequence profiles]" << endl;
+    cout << "[Starting sequence profiling thread]" << endl;
     while(readingDB || seqsToProfile() > 0){
         if(seqsToProfile() > 0){
             pair<string*, string*> rawSeq = getRawSeq();
-            NuclSeq *seq = new NuclSeq(rawSeq.first, rawSeq.second);
-            SeqProfile profile(rawSeq.second, defaultWordSize);
-            SeqNode node;
-            node.seq = seq;
-            node.similarity = profile.compare(&queryProfile);
-            addToSortingQueue(node);
+            if(rawSeq.first != NULL){
+                NuclSeq *seq = new NuclSeq(rawSeq.first, rawSeq.second);
+                SeqProfile profile(rawSeq.second, defaultWordSize);
+                SeqNode node;
+                node.seq = seq;
+                node.similarity = profile.compare(&queryProfile);
+                addToSortingQueue(node);
+            }
         }
     }
-    profiling = false;
+    //profiling--;
     cout << "[Finished profiling sequences]" << endl;
 }
 

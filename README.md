@@ -13,7 +13,10 @@ CTTTTTTTTTTTTTTTTTTTTTCGAGAGAGATATATATATACA|AGAGAGAGAGA|,-'`
 ```
 
 # alenhador
-Parallel aligner for nucleotide sequences (.fasta) with similarity heuristic filter
+Parallel aligner (Needleman–Wunsch) for nucleotide sequences (.fasta) with similarity heuristic filter.
+
+# what it does?
+Searches for query .fasta nucleotide sequences inside a .fasta file with many different sequences, using dynamic and parallel computing.
 
 # build it
 

@@ -22,7 +22,7 @@ struct SeqNode {
 class FastaHeuristicFilter{
 public:
     FastaHeuristicFilter(NuclSeq *querySeq, string dbPath, int maxFiltered);
-    list< pair<NuclSeq*, float> > justDoIt();
+    map<NuclSeq*, float> justDoIt();
 private:
     int filtered = 0;
     int seqsReadFromDB = 0;

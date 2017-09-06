@@ -49,35 +49,59 @@ void printHelp(){
 
 void searchEachInQuery(string query, string db, int max){
     BigFasta querySeqs(query);
+    int count = 0;
     for(pair<int, NuclSeq*> entry : querySeqs.sequences){
         NuclSeq *seq = entry.second;
         if(seq == NULL){
             cout << "Query at line " << entry.first << " of " << query 
             << " could not be read correctly, not searching it." << endl;
         }else{
+            if(count > 0){
+                cout << "\n##########################################################" << endl;
+                cout << "##########################################################" << endl;
+                cout << "##########################################################" << endl;
+            }
             searchSeqInFastaDB(seq, db, max);
+            count++;
             //delete seq;
         }
     }
 }
 
-void searchSeqInFastaDB(NuclSeq *querySeq, string dbPath, int maxFiltered){
+void searchSeqInFastaDB(NuclSeq* querySeq, string dbPath, int maxFiltered){
     FastaHeuristicFilter filter(querySeq, dbPath, maxFiltered);
-    cout << "\n##########################################################" << endl;
-    cout << "##########################################################" << endl;
-    cout << "##########################################################" << endl;
+    
     cout << "\nQuery sequence:\n\t" << *querySeq->name << endl
         <<"\tLength: " << querySeq->getContent()->length() << "bp" << endl;
-    cout << "Similtar to: " << endl;
-    list< pair<NuclSeq*, float> > filteredSequences = filter.justDoIt();
-    if(filteredSequences.size() > 0){
-        for(pair<NuclSeq*, float> seq : filteredSequences){
-            cout << "Similarity with\n\t" << *seq.first->name 
-            << "(" << seq.first->getContent()->length() <<"bp)" << endl
-            << "\n\t" << seq.second << endl;
+    map<NuclSeq*, float> filteredSequences = filter.justDoIt();
+    map<NuclSeq*, Alignment*> alignments;
+    for(pair<NuclSeq*, float> filteredSeq : filteredSequences){
+        Alignment *alignment = new Alignment(querySeq, filteredSeq.first);
+        alignment->startAlignment();
+        alignments[filteredSeq.first] = alignment;
+    }
+    int completed = 0;
+    map<NuclSeq*, bool> printed;
+    for(pair<NuclSeq*, Alignment*> entry : alignments){
+        printed[entry.first] = false;
+    }
+    while(completed < alignments.size()){
+        for(pair<NuclSeq*, Alignment*> entry : alignments){
+            if(!(printed[entry.first]) && entry.second->isDone()){
+                cout << entry.second->getAlignment() << endl;
+                printed[entry.first] = true;
+                completed++;
+            }
         }
-    }else{
-        cout << "\tNone\n";
+    }
+
+    cout << "Search for:\n\t" << *querySeq->name << endl; 
+    cout << "Overall Results:" << endl;
+    for(pair<NuclSeq*, Alignment*> entry : alignments){
+        cout << *(entry.first->name) << endl;
+        cout << "\t" << "Profile Similarity: " << (filteredSequences[entry.first])*100 << "%" << endl;
+        cout << "\t" << "Alignment Score: " << entry.second->getAlignmentValue() << endl;
+        cout << "\t" << "Alignment Relative Score: " << (entry.second->getAlignmentRelativeValue())*100 << "%\n\n";
     }
 }
 

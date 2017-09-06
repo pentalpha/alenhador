@@ -6,4 +6,4 @@ all:
 	-o bin/alenhador
 test:
 	make all
-	./bin/alenhador example-data/query.fa example-data/database.fa 6
+	./bin/alenhador example-data/query.fa example-data/database.fa 3

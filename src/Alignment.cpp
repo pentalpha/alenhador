@@ -10,9 +10,11 @@ string charDequeToString(deque<char> chars){
     return str;
 }
 
-Alignment::Alignment(string a, string b)
-    : seqA(a), seqB(b), lenX(seqA.length()+1), lenY(seqB.length()+1)
+Alignment::Alignment(string* a, string* b, string aName, string bName)
+    : seqA(*a), seqB(*b), lenX(seqA.length()+1), lenY(seqB.length()+1)
 {
+    seqAName = aName;
+    seqBName = bName;
     makeNuclSimMatrix();
     initCharIndex();
     allocateBacktrackMatrix();
@@ -20,9 +22,11 @@ Alignment::Alignment(string a, string b)
     initMatrix();
 }
 
-Alignment::Alignment(NuclSeq a, NuclSeq b)
-    : seqA(*(a.getContent())), seqB(*(b.getContent())), lenX(seqA.length()+1), lenY(seqB.length()+1)
+Alignment::Alignment(NuclSeq* a, NuclSeq* b)
+    : seqA(*(a->getContent())), seqB(*(b->getContent())), lenX(seqA.length()+1), lenY(seqB.length()+1)
 {
+    seqAName = *(a->name);
+    seqBName = *(b->name);
     makeNuclSimMatrix();
     initCharIndex();
     allocateBacktrackMatrix();
@@ -142,10 +146,79 @@ pair<string, string> Alignment::traceAlignment(){
     return aligns;
 }
 
-pair<string, string> Alignment::align(){
+void Alignment::align(){
     getValueOfXY(lenX-1, lenY-1);
-    cout << "Calculated simMatrix" << endl;
-    return traceAlignment();
+    //cout << "Calculated simMatrix" << endl;
+    alignment = traceAlignment();
+    value = score(seqA, seqB);
+    done = true;
+}
+
+void Alignment::startAlignment(){
+    thread alignmentThread(&Alignment::align, this);
+    done = false;
+    alignmentThread.detach();
+}
+
+float Alignment::score(string seqA, string seqB){
+    bool coveringGap = false;
+    int points = 0;
+    for (int i = 0; i < seqA.length() && i < seqB.length(); i++){
+        char itemA = seqA[i];
+        char itemB = seqB[i];
+        int s = sim(itemA, itemB);
+        if(!coveringGap && s == nuclSimMatrix[4][4]){
+            coveringGap = true;
+            points += gapStartPenalty;
+        }else if(coveringGap && s != nuclSimMatrix[4][4]){
+            coveringGap = false;
+        }
+
+        points += s;
+    }
+    return points;
+}
+
+bool Alignment::isDone(){
+    return done;
+}
+
+float Alignment::getAlignmentValue(){
+    return value;
+}
+
+float Alignment::getAlignmentRelativeValue(){
+    return ((getAlignmentValue() / alignment.first.length()) / nuclSimMatrix[0][0]);
+}
+
+string Alignment::getAlignment(){
+    int lineLength = 30;
+    int nextPart = 0;
+    string output = "";
+    output += string("querySq = '") + seqAName + string("'\n");
+    output += string("subject = '") + seqBName + string("'\n");
+    output += string("Alignment Score = ") + to_string(getAlignmentValue())
+            + string("\n");
+    output += string("Alignment Relative Score = ") 
+            + to_string(getAlignmentRelativeValue())
+            + string("\n\n");
+    string querySq = alignment.first;
+    string subject = alignment.second;
+    int notPrinted = querySq.length();
+    while(notPrinted > 0){
+        int start = nextPart;
+        string qryPart = querySq.substr(start, lineLength);
+        string sbjPart = subject.substr(start, lineLength);
+        int end = start + qryPart.length();
+        nextPart += qryPart.length();
+        notPrinted -= qryPart.length();
+
+        output += string("querySq\t") + to_string(start) + string ("\t");
+        output += qryPart + string("\t") + to_string(end) + string("\n");
+        output += string("subject\t") + to_string(start) + string ("\t");
+        output += sbjPart + string("\t") + to_string(end) + string("\n\n");
+    }
+    return output;
 }
 
 /*import numpy as np

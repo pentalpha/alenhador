@@ -26,7 +26,7 @@ FastaHeuristicFilter::FastaHeuristicFilter(NuclSeq *query, string dbPath, int ma
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
-list< pair<NuclSeq*, float> > FastaHeuristicFilter::justDoIt(){
+map<NuclSeq*, float> FastaHeuristicFilter::justDoIt(){
     //thread readDBThread(readDB);
     int numberOfCompareThreads = std::thread::hardware_concurrency() - 2;
     if (numberOfCompareThreads < 2){
@@ -62,14 +62,11 @@ list< pair<NuclSeq*, float> > FastaHeuristicFilter::justDoIt(){
     sorting = false;
     
     //cout << "FINISHED THREADS" << endl;
-    list< pair<NuclSeq*, float> > finalSeqs;
+    map<NuclSeq*, float> finalSeqs;
     for(SeqNode node : filteredNodes){
-        pair<NuclSeq*, float> newEntry;
-        newEntry.first = node.seq;
-        newEntry.second = node.similarity;
-        finalSeqs.push_back(newEntry);
+        finalSeqs[node.seq] = node.similarity;
     }
-
+    //cout << "returning to main()" << endl;
     return finalSeqs;
 }
 
@@ -229,6 +226,5 @@ void FastaHeuristicFilter::sortSeqs(){
         }
     }
     sorting = false;
-    cout << string("[Finished filtering sequences]\n\tUnfiltered: ") + to_string(filteredNodes.size())
-        + string(", filtered: ") + to_string(filtered) << endl;
+    cout <<"[Finished filtering sequences]\n"<< endl;
 }

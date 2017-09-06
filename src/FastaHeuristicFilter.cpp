@@ -26,7 +26,7 @@ FastaHeuristicFilter::FastaHeuristicFilter(NuclSeq *query, string dbPath, int ma
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
-map<NuclSeq*, float> FastaHeuristicFilter::justDoIt(){
+pair<list<NuclSeq*>, map<NuclSeq*, float> > FastaHeuristicFilter::justDoIt(){
     //thread readDBThread(readDB);
     int numberOfCompareThreads = std::thread::hardware_concurrency() - 2;
     if (numberOfCompareThreads < 2){
@@ -62,12 +62,16 @@ map<NuclSeq*, float> FastaHeuristicFilter::justDoIt(){
     sorting = false;
     
     //cout << "FINISHED THREADS" << endl;
+    list<NuclSeq*> sortedSeqs;
     map<NuclSeq*, float> finalSeqs;
     for(SeqNode node : filteredNodes){
         finalSeqs[node.seq] = node.similarity;
+        sortedSeqs.push_back(node.seq);
     }
-    //cout << "returning to main()" << endl;
-    return finalSeqs;
+    pair<list<NuclSeq*>, map<NuclSeq*, float> > result;
+    result.first = sortedSeqs;
+    result.second = finalSeqs;
+    return result;
 }
 
 //////////////////////////////////////////////////////////////////////////////

@@ -73,23 +73,25 @@ void searchSeqInFastaDB(NuclSeq* querySeq, string dbPath, int maxFiltered){
     
     cout << "\nQuery sequence:\n\t" << *querySeq->name << endl
         <<"\tLength: " << querySeq->getContent()->length() << "bp" << endl;
-    map<NuclSeq*, float> filteredSequences = filter.justDoIt();
+    pair<list<NuclSeq*>, map<NuclSeq*, float> > filteringResults = filter.justDoIt();
+    map<NuclSeq*, float> filteredSequences = filteringResults.second;
+    list<NuclSeq*> sortedFilteredSeqs = filteringResults.first;
     map<NuclSeq*, Alignment*> alignments;
-    for(pair<NuclSeq*, float> filteredSeq : filteredSequences){
-        Alignment *alignment = new Alignment(querySeq, filteredSeq.first);
+    for(NuclSeq* filteredSeq : sortedFilteredSeqs){
+        Alignment *alignment = new Alignment(querySeq, filteredSeq);
         alignment->startAlignment();
-        alignments[filteredSeq.first] = alignment;
+        alignments[filteredSeq] = alignment;
     }
     int completed = 0;
     map<NuclSeq*, bool> printed;
-    for(pair<NuclSeq*, Alignment*> entry : alignments){
-        printed[entry.first] = false;
+    for(NuclSeq* filteredSeq : sortedFilteredSeqs){
+        printed[filteredSeq] = false;
     }
     while(completed < alignments.size()){
-        for(pair<NuclSeq*, Alignment*> entry : alignments){
-            if(!(printed[entry.first]) && entry.second->isDone()){
-                cout << entry.second->getAlignment() << endl;
-                printed[entry.first] = true;
+        for(NuclSeq* filteredSeq : sortedFilteredSeqs){
+            if(!(printed[filteredSeq]) && alignments[filteredSeq]->isDone()){
+                cout << alignments[filteredSeq]->getAlignment() << endl;
+                printed[filteredSeq] = true;
                 completed++;
             }
         }
@@ -97,10 +99,10 @@ void searchSeqInFastaDB(NuclSeq* querySeq, string dbPath, int maxFiltered){
 
     cout << "Search for:\n\t" << *querySeq->name << endl; 
     cout << "Overall Results:" << endl;
-    for(pair<NuclSeq*, Alignment*> entry : alignments){
-        cout << *(entry.first->name) << endl;
-        cout << "\t" << "Profile Similarity: " << (filteredSequences[entry.first])*100 << "%" << endl;
-        cout << "\t" << "Alignment Score: " << entry.second->getAlignmentValue() << endl;
-        cout << "\t" << "Alignment Relative Score: " << (entry.second->getAlignmentRelativeValue())*100 << "%\n\n";
+    for(NuclSeq* filteredSeq : sortedFilteredSeqs){
+        cout << *(filteredSeq->name) << endl;
+        cout << "\t" << "Profile Similarity: " << (filteredSequences[filteredSeq])*100 << "%" << endl;
+        cout << "\t" << "Alignment Score: " << alignments[filteredSeq]->getAlignmentValue() << endl;
+        cout << "\t" << "Alignment Relative Score: " << (alignments[filteredSeq]->getAlignmentRelativeValue())*100 << "%\n\n";
     }
 }

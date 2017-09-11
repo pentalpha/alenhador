@@ -10,11 +10,6 @@ CTTTTTTTTTTTTTTTTTTTTTCGAGAGAGATATATATATACA|AGAGAGAGAGA|,-'`
                                       "AGGGGc..       ,.cGGGGA"
                                         "CAAAAAAAAAAAAAAAAAG"
                                            ""AATTTTTTTGG""
-		`-:-.   ,-;"`-:-.   ,-;"`-:-.   ,-;"`-:-.   ,-;"
-		   `=`,'=/     `=`,'=/     `=`,'=/     `=`,'=/
-		     y==/        y==/        y==/        y==/
-		   ,=,-<=`.    ,=,-<=`.    ,=,-<=`.    ,=,-<=`.
-		,-'-'   `-=_,-'-'   `-=_,-'-'   `-=_,-'-'   `-=_
 ```
 # alenhador
 Parallel aligner (Needleman–Wunsch) for nucleotide sequences (.fasta) with similarity heuristic filter.

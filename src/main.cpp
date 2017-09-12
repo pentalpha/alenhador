@@ -2,52 +2,111 @@
 #include <iostream>
 #include <map>
 #include <list>
+#include <vector>
 #include "Alignment.h"
 #include "NuclSeq.h"
 #include "FastaHeuristicFilter.h"
 #include "BigFasta.h"
+#include "FileUtils.h"
 
 using namespace std;
 
-void searchEachInQuery(string query, string db, int max);
+void searchEachInQuery(string query, string db, int max, int specificIndex);
 void searchSeqInFastaDB(NuclSeq *querySeq, string dbPath, int maxFiltered);
 void printHelp();
+void printInvalidArgument(string arg);
 
 int main(int argc, char *argv[]){
-    if(argc >= 3){
-        string queryFile(argv[1]);
-        cout << "Query .fasta file: " << queryFile << endl;
-        string databaseFile(argv[2]);
-        cout << "Database .fasta file: " << queryFile << endl;
-        int maxToAlign = 6;
-        if(argc >= 4){
-            maxToAlign = stoi(argv[3]);
+    vector<string> args;
+    bool helpArgFound = false;
+    for(int i = 1; i < argc; i++){
+        string s(argv[i]);
+        if(s == "-h" || s == "--help"){
+            helpArgFound = true;
+            break;
         }
-        searchEachInQuery(queryFile, databaseFile, maxToAlign);
-    }else if (argc == 2){
+        args.push_back(s);
+    }
+
+    if(helpArgFound){
         printHelp();
     }else{
-        cout << "Please inform the query and database fasta files" << endl;
-        printHelp();
+        string queryFilePath = "";
+        string databaseFilePath = "";
+        int maxToAlign = 4;
+        int specificQuery = -1;
+
+        for(string arg : args){
+            if(fileExists(arg.c_str())){
+                if(queryFilePath == ""){
+                    queryFilePath = arg;
+                }else if (databaseFilePath == ""){
+                    databaseFilePath = arg;
+                }else{
+                    printInvalidArgument(arg);
+                }
+            }else if(arg.length() > 2){
+                if(arg[1] == '='){
+                    string rawNumber = arg.substr(2,arg.length()-2);
+                    try{
+                        int value = stoi(rawNumber);
+                        //cout << arg << "=" << value << endl;
+                        if(arg[0] == 'n'){
+                            maxToAlign = value;
+                        }else if(arg[0] == 'i'){
+                            specificQuery = value;
+                        }
+                    }catch(...){
+                        printInvalidArgument(rawNumber);
+                    }
+                }else{
+                    printInvalidArgument(arg);
+                }
+            }else{
+                printInvalidArgument(arg);
+            }
+        }
+
+        if(queryFilePath != "" && databaseFilePath != ""){
+            cout << "Query\t\t" << queryFilePath << endl;
+            cout << "DB\t\t" << databaseFilePath << endl;
+            cout << "Max. Results\t" << maxToAlign << endl;
+            if(specificQuery == -1){
+                cout << "Querys\tALL" << endl;
+            }else{
+                cout << "Align only\t" << specificQuery+1 << "th" << endl;
+            }
+            
+            searchEachInQuery(queryFilePath, databaseFilePath, maxToAlign, specificQuery);
+        }else{
+            cout << "Please inform the query and database '*.fasta' files. " << endl;
+            printHelp();
+        }
     }
 
     return 0;
 }
 
-void printHelp(){
-    cout << "HELP: " << endl;
-    cout << "./alenhador [fasta query file] [fasta DB file] n" << endl
-        << "\t[fasta query file]\t= A .fasta file with sequences of " << endl
-        << "\t\t\t\tnucleotides to be searched." << endl
-        << "\t[fasta DB file]\t\t= A .fasta file with a lot of sequences," << endl
-        << "\t\t\t\twhere you want to search the query." << endl
-        << "\tn\t\t\t= The maximum number of results for each " << endl 
-        << "\t\t\t\tquery. Default=6." << endl
-        << "Example usage:" << endl
-        << "\t./alenhador example-data/query.fa example-data/database.fa 7" << endl;
+void printInvalidArgument(string arg){
+    cout << "ERROR! Invalid argument: " << arg << endl;
 }
 
-void searchEachInQuery(string query, string db, int max){
+void printHelp(){
+    cout << "HELP: " << endl;
+    cout << "./alenhador <query file name>.fasta <DB file name>.fasta [n=X] [i=Y]" << endl
+        << "\t<query file name>.fasta\t= A .fasta file with sequences of " << endl
+        << "\t\t\t\tnucleotides to be searched." << endl
+        << "\t<DB file name>.fasta\t= A .fasta file with a lot of sequences," << endl
+        << "\t\t\t\twhere you want to search the query." << endl
+        << "\tn\t\t\t= The maximum number of results for each " << endl 
+        << "\t\t\t\tquery. Default=4." << endl
+        << "\ti\t\t\t= If specified, will only search for the  " << endl 
+        << "\t\t\t\tthe specific query with index 'i'." << endl
+        << "Example usage:" << endl
+        << "\t./alenhador example-data/query.fa example-data/database.fa n=7 i=0" << endl;
+}
+
+void searchEachInQuery(string query, string db, int max, int specificIndex){
     BigFasta querySeqs(query);
     int count = 0;
     for(pair<int, NuclSeq*> entry : querySeqs.sequences){
@@ -56,12 +115,14 @@ void searchEachInQuery(string query, string db, int max){
             cout << "Query at line " << entry.first << " of " << query 
             << " could not be read correctly, not searching it." << endl;
         }else{
-            if(count > 0){
-                cout << "\n##########################################################" << endl;
-                cout << "##########################################################" << endl;
-                cout << "##########################################################" << endl;
+            if(count == specificIndex || specificIndex == -1){
+                if(count > 0){
+                    cout << "\n##########################################################" << endl;
+                    cout << "##########################################################" << endl;
+                    cout << "##########################################################" << endl;
+                }
+                searchSeqInFastaDB(seq, db, max);
             }
-            searchSeqInFastaDB(seq, db, max);
             count++;
             //delete seq;
         }

@@ -27,21 +27,25 @@ Requires 'g++' with C++14 available and 'make'
     $ make
 ```
 
-# --help
+# --help | -h
 ```sh
-    $ ./bin/alenhador -h
-    HELP: 
-    ./alenhador [fasta query file] [fasta DB file] n
-        [fasta query file] = A .fasta file with sequences of 
-                           nucleotides to be searched.
-        [fasta DB file]	   = A .fasta file with a lot of sequences,
-                           where you want to search the query.
-        n                  = The maximum number of results for each 
-                           query. Default=6.
+$ ./bin/alenhador -h
+HELP: 
+./alenhador <query file name>.fasta <DB file name>.fasta [n=X] [i=Y]
+	<query file name>.fasta	= A .fasta file with sequences of 
+				nucleotides to be searched.
+	<DB file name>.fasta	= A .fasta file with a lot of sequences,
+				where you want to search the query.
+	n			= The maximum number of results for each 
+				query. Default=4.
+	i			= If specified, will only search for the  
+				the specific query with index 'i'.
+Example usage:
+	./alenhador example-data/query.fa example-data/database.fa n=7 i=0
 ```
 # Example usage:
 ```sh
-        ./alenhador example-data/query.fa example-data/database.fa 3
+        ./alenhador example-data/query.fa example-data/database.fa n=3
         Query sequence:
 	       >BC036785.1 Homo sapiens TP53 target 5, mRNA (cDNA clone MGC:46104 IMAGE:5744881), complete cds
 	       	Length: 1040bp
